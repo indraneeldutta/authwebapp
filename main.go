@@ -1,14 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"sort"
-	"text/template"
 
-	"github.com/gorilla/pat"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 	"github.com/markbates/goth"
@@ -40,6 +37,8 @@ func init() {
 		linkedin.New(os.Getenv("LINKEDIN_KEY"), os.Getenv("LINKEDIN_SECRET"), "http://localhost:3000/auth/linkedin/callback"),
 		twitter.New(os.Getenv("TWITTER_KEY"), os.Getenv("TWITTER_SECRET"), "http://localhost:3000/auth/twitter/callback"),
 	)
+
+	initDb()
 }
 
 var (
@@ -57,55 +56,12 @@ type ProviderIndex struct {
 }
 
 func main() {
-	var keys []string
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", handleHome).Methods("GET")
+	router.HandleFunc("/auth/{provider}", handleProvider).Methods("GET")
+	router.HandleFunc("/auth/{provider}/callback", handleProviderCallback).Methods("GET")
+	router.HandleFunc("/logout/{provider}", handleLogout).Methods("GET")
+	router.HandleFunc("/user/all", handleAllUsers).Methods("GET")
 
-	providerIndex := &ProviderIndex{Providers: keys, ProvidersMap: m}
-
-	p := pat.New()
-	p.Get("/auth/{provider}/callback", func(res http.ResponseWriter, req *http.Request) {
-
-		user, err := gothic.CompleteUserAuth(res, req)
-		if err != nil {
-			fmt.Fprintln(res, err)
-			return
-		}
-		t, _ := template.New("foo").Parse(userTemplate)
-		t.Execute(res, user)
-	})
-
-	p.Get("/logout/{provider}", func(res http.ResponseWriter, req *http.Request) {
-		gothic.Logout(res, req)
-		res.Header().Set("Location", "/")
-		res.WriteHeader(http.StatusTemporaryRedirect)
-	})
-
-	p.Get("/auth/{provider}", func(res http.ResponseWriter, req *http.Request) {
-		// try to get the user without re-authenticating
-		if gothUser, err := gothic.CompleteUserAuth(res, req); err == nil {
-			t, _ := template.New("foo").Parse(userTemplate)
-			t.Execute(res, gothUser)
-		} else {
-			gothic.BeginAuthHandler(res, req)
-		}
-	})
-
-	p.Get("/", func(res http.ResponseWriter, req *http.Request) {
-		t, _ := template.New("foo").Parse(indexTemplate)
-		t.Execute(res, providerIndex)
-	})
-
-	log.Println("listening on localhost:3000")
-	log.Fatal(http.ListenAndServe(":3000", p))
+	log.Fatal(http.ListenAndServe(":3000", router))
 }
-
-var indexTemplate = `{{range $key,$value:=.Providers}}
-    <p><a href="/auth/{{$value}}">Log in with {{index $.ProvidersMap $value}}</a></p>
-{{end}}`
-
-var userTemplate = `
-	<p><a href="/logout/{{.Provider}}">logout</a></p>
-	<p>Hello {{.Name}}</p>`
