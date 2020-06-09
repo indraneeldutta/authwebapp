@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"sort"
 	"text/template"
@@ -66,7 +67,7 @@ func handleAllUsers(w http.ResponseWriter, r *http.Request) {
 		var user User
 		err := users.Scan(&userID, &name, &email, &phone, &createdOn, &meta)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		user.UserID = userID
 		user.Name = name
