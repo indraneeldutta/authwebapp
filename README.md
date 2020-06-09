@@ -16,7 +16,7 @@ Install PostgreSQL
 Change the DB Creds in the `.env` file to your instance.
 
 1. Create a Database `auth`
-2. Create a schema inside `auth` as `users`
+2. Create a schema inside the DB `auth` as `users`
 3. Create import the csv file to create the table `auth` inside `users` schema
 
 Note: The social login creds (client id and client secret) are stored in the `.env` file.
