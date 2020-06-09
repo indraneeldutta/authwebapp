@@ -4,6 +4,7 @@ deps:
 	go get github.com/markbates/goth
 	go get github.com/gorilla/pat
 	go get -u github.com/gorilla/sessions
+	go get -u github.com/lib/pq
 	
 build:
 	go build -o bin/main

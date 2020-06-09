@@ -10,6 +10,7 @@ Run `make deps` OR execute the below commands to install all the dependencies
     go get -u github.com/markbates/goth
     go get -u github.com/gorilla/pat
     go get -u github.com/gorilla/sessions
+    go get -u github.com/lib/pq
 ```
 Install PostgreSQL
 
