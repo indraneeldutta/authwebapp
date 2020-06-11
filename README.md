@@ -30,9 +30,3 @@ Run `make run` to run the binary after build (located in bin folder)
 Open browser and navigate to `localhost:3000`
 
 API to see all the users: `localhost:3000/user/all`
-
-
-## Constraints
-
-1. Linkedin login will not work because Linked Oauth required approval from Page admin and associated page, without which the access token cannot be generated. 
-2. The Oauth does not return data which is not made public by the user profile (privacy settings of user logging in)
